@@ -21,4 +21,3 @@ jupyter_contrib_nbextensions
 IPython[all]
 opencv-contrib-python
 openpyxl
-
