@@ -4,7 +4,7 @@
 - [Fisheye camera calibration](#fisheye-camera-calibration)
     - [Calibration procedures](#calibration-procedures)
     - [Check before you start](#check-before-you-start)
-- [2 D fish tracking](#2-d-fish-tracking)
+- [2D fish tracking](#2-d-fish-tracking)
     - [Installation](#installation)
         - [For FishSeg](#for-fishseg)
         - [For TrackUtil](#for-trackutil)
@@ -48,25 +48,20 @@ Make sure you have checked the following tips before you start calibration.
 
 An example of "datdir" and "savedir" setup for different **DOITALL** functions:
 * Kalibing_DOITALL.m
-    * datdir = 'D:\YF_FishTracking'
-    * savdir = 'D:\YF_FishTracking\0889_EFIGUS_B0'
+    * datdir = 'Y:\'
+    * savdir = 'D:\FishSeg_Results\CalibResults'
 * Undisting_DOITALL.m
-    * datdir = 'D:\YF_FishTracking\0889_EFIGUS_B0'
-    * savdir = 'D:\YF_FishTracking\0889_EFIGUS_B0\CLB_2020_12_11_14_04_xxx#xxx'
+    * datdir = 'D:\FishSeg_Results\CalibResults'
+    * savdir = 'D:\FishSeg_Results\CalibResults\CLB_2020_12_11_14_04_xxx#xxx'
 * Bring2Flume_DOITALL.m
-    * datdir = 'D:\YF_FishTracking'
-    * savdir = 'D:\YF_FishTracking\0889_EFIGUS_B0\CLB_2020_12_11_14_04_xxx#xxx'
-
-Special notes for **Bring2Flume** function:
-1. When clicking the points, select the same points for CAM1 in both CAM0-CAM1 and CAM1-CAM2.
-2. The numbers of clicked points must match the numbers in the file *20181017_KAL00.pdf*.
-3. There should be at least 4 rows of numbers overlapping between 2 cameras in order to get a good calibration.
+    * datdir = 'Y:\'
+    * savdir = 'D:\FishSeg_Results\CalibResults\CLB_2020_12_11_14_04_xxx#xxx'
 
 # 2D fish tracking
-Basically, we apply the [Mask_RCNN](https://github.com/Kamlesh364/Mask-RCNN-TF2.7.0-keras2.8.0) model, which is a typical deep learning model for instance segmentation, to conduct 2D fish tracking.
+Basically, we apply the [Mask_RCNN](https://github.com/ErinYang96/FishSeg.git) model, which is a typical deep learning model for instance segmentation, to conduct 2D fish tracking.
 Two steps are required to conduct the 2D fish tracking.
 1. (Optional) Pre-processing of videos (VideoProcessing)
-2. Fish segmentation and tracking (using Mask_RCNN_FishSeg)
+2. Fish segmentation and tracking (using FishSeg)
 3. Post-processing of tracks (using TrackUtil)
 
 Note that this process with deep learning model can be conducted using CPU. But with NVIDIA GPU, it is much faster. See the following *Installation* section for more instructions about how to implement the python packages.
@@ -85,7 +80,7 @@ Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed i
     ```
 2. Clone this repository
     ```
-    git clone https://github.com/Kamlesh364/Mask-RCNN-TF2.7.0-keras2.7.0.git
+    git clone https://github.com/ErinYang96/FishSeg.git
     ```
 3. Go to the repository root directory of above packages
     ```
@@ -116,6 +111,7 @@ Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed i
     and then repeat the former command again to make the jupyter extension work. To turn on the menu function for jupyter notebook, just follow: *jupyter notebook -> Nbextensions -> Table of Contents(2)*.
 
 **How to activate the model afterwards**
+
 Assuming everything works well, you can then use this model by excuting following commands on your Anaconda Prompt.
 ```
 conda activate FishSeg # not necessary if still active
@@ -145,6 +141,7 @@ python TrackUtil.py
 
 ## (Optional) Step 1: Pre-processing of videos
 Althrough Mask_RCNN model is powerful for instance segmentation of objects moving in various backgrounds, it may not perform well if the color contrast between objects and backgrounds is too low. We have to say that this is the case for our project, where fish, especially trout, sometimes can be barely seen with the color of flume bottom so close to the fish itself. Herein, we have developed an extra pre-processing step to help improve the subsequent model performance. If you encounter similar situations as we do, you may apply this procedure first instead of stepping directly into the deep learning model.
+
 The *pre-processing* step is mainly based on an OpenCV [backgroundSubtractorMOG2](https://docs.opencv.org/3.4/d7/d7b/classcv_1_1BackgroundSubtractorMOG2.html) method, which is applied in the `backgroundSubtraction.py`. This function enables you to do background subtraction for single video, video sets under specific folder, and videos under multiple folders. Two features are especially designed for our tracking projects.
 1. Decide the start time when fish enter the shooting area to discard the periods with no fish.
 2. Set frequency of frame selection, which is quite useful if
@@ -155,121 +152,78 @@ The *pre-processing* step is mainly based on an OpenCV [backgroundSubtractorMOG2
 
 ## Step 2: Make datasets
 If you have videos where the target objects are easy to find, you can directly use the *Annotation* function of [TrackUtil](https://gitlab.mpcdf.mpg.de/pnuehren/trackutil) to make datasets. Note that you can play multiple videos simultaneously using the *File* menu > *Connect*. Also, *File* menu > *Write to dataset* can extend an existing dataset by adding the annotations of the current video, which is quite a useful function if you want to build one dataset from more than one cameras.
+
 However, if you have multiple videos where the target objects enter and leave the observation zone at random time, you may want to collect the video clips where target objects are present, which is exactly our case. To deal with this problem, we further implement two more python scripts (list below).
 1. `get_videoclip.py`
+
     Get video clips for periods when the target objects show up, and then apply the backgroundSubtractorMOG2 method. A small number of video clips with representive or hard-to-detect configurations is enough. Note that a series of un-preprocessed video clips is also clipped as temporary files.
+    
 2. `concatenate_clips`
+
    Concatenate all pre-processed video clips obtained in the "get_videoclip" step to generate the final video for making datasets.
 
 It is suggested that you organize your folder in the following way.
 ```
-| -- Original videos 
-    | -- 386_2020_05_11_08_18 
-        | -- Cam_0_final.avi
-        | -- Cam_1_final.avi
-    | -- 387_2020_05_11_09_19 
-        | -- Cam_0_final.avi
-        | -- ...
-| -- Video clips
-    | -- 386_2020_05_11_08_18_clip
-        | -- Cam_0_cut.avi
-        | -- Cam_1_cut.avi
-    | -- 387_2020_05_11_09_19_clip
-    | -- final.avi
-| -- Temp clips
-    | -- 386_2020_05_11_08_18_temp
-        | -- Cam_0_temp.avi
-        | -- Cam_1_temp.avi
-    | -- 387_2020_05_11_09_19_temp
+| -- VideoClips
+    | -- BGS clips_trout
+        | -- 386_2020_05_11_08_18_bgs
+            | -- Cam_0_bgs.avi
+            | -- Cam_1_bgs.avi
+        | -- 387_2020_05_11_09_19_bgs
+        | -- final.avi
+    | -- Temp clips_trout
+        | -- 386_2020_05_11_08_18_temp
+            | -- Cam_0_temp.avi
+            | -- Cam_1_temp.avi
+        | -- 387_2020_05_11_09_19_temp
 ```
 
 ## Step 3: Segmentation and tracking
 Currently, We have two sets of codes which are suitable for *Google Colab (Ubuntu System)* and *Windows 10*, respectively. Please select one of them according to your operating system. Note that if you hope to further develop the code for your Linus system, it is recommended that you start from the code for Colab.
+
 For those who don't have a NIVIDA GPU on your PC or have GPUs of low memory, we recommand you to use Colab, which have free GPU resources and is quite suitable for beginners who have limited knowledge about python. If your have no idea about Colab before, check [here](https://medium.com/deep-learning-turkey/google-colab-free-gpu-tutorial-e113627b9f5d) to get an overview of what Colab is capable of. Please pay special attention to _how to mount on Google Drive_ and _how to set free GPU_, which are essential for your start. Note that Google Drive only provides 15G for data storage, which means Colab is not a good option for long-term training, since it will produce log data which can consume your RAM quickly.
+
 In addition, in case you may want to check your datasets or adjust the proportion between training and validation datasets for better model performance, `datasets.py` is implemented to make it easier for you with no need to make annotations over again.
-For both Colab and local machine, we suggest you to create a new folder for your datasets, videos, models, and outputs under your Google Drive or local repository root directory. The folder is suggested to organize as follow (take *trout* folder for example):
-```
-| -- trout
-    | -- Dataset
-        | -- training dataset.h5
-        | -- validation dataset.h5
-    | -- Videos
-        | -- 386_2020_05_11_08_18_mog2
-            | -- Cam_0_mog2.avi
-            | -- Cam_1_mog2.avi
-        | -- 387_2020_05_11_09_19_mog2
-            | -- Cam_0_mog2.avi
-            | -- ...
-    | -- save_model
-        | -- Run_1
-            | -- Test0501.h5
-            | -- Test0502.h5
-        | -- Run_2
-            | -- Test0523.h5
-            | -- ...
-    | -- Outputs
-        | -- 386_2020_05_11_08_18_mog2_results
-            | -- predictions_Cam_0_mog2.h5
-            | -- tracks_Cam_0_mog2.pkl
-            | -- tracks_Cam_0_mog2.xlsx
-            | -- ...
-        | -- 387_2020_05_11_09_19_mog2_results
-            | -- ...
-    | -- makeDatasets
-        | -- get_videoclips.py
-        | -- concatenate_clips.py
-        | -- datasets.py
-    | -- backgroundSubtraction.py
-    | -- FishSeg_Windows.py
-    | -- FishSeg_Windows.ipynb
-    | -- FishSeg_Colab.ipynb
-    | -- ReadTensorboard.py
-    | -- mask2tracks.py
-    | -- export_tracks.py
-```
+
 Instructions about how to use the model has been given within the code. **FishSeg** is basically written to be able to operate in two ways (after starting training from *COCO* weights): 
 1. Load model for video testing from _last_ weights (_logs_ folder). With trained model, you may skip *Pre-definition* section, and start video testing from *From last-trained model (coco/last)* section.
 2. Save current model in HD5F format (*save_model* folder), load model for video testing from pre-saved .h5 model. Same as above, in this case you can start video testing from *From saved model* section.
 
 After you finish training the model, you need to check the model performance using _Tensorboard_ or our `ReadTensorboard.py`, which enables you to export loss metrics and images with learning curves. For details about how to diagnose model performance from learning curves, please go to Q&A for more information.
 
-Then if you finish tracking, you may get tracking results from the model in `.h5` format. `mask2tracks.py` is needed to convert the masks to tracks (outputs in `.pkl` formate), while `export_tracks.py` enables you to export tracks to excel spreadsheet anytime you want. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`.
-
-Note that since the program must be run in C disk, you can do following things to avoid slowing down the computer:
-1. Transfer your outputs to other disks or hard-drives;
-2. Delete unneccesary log files (in .h5 format under the _logs_ folder). You may keep the newest log in case it is needed when loading the _last_ weights.
+Then if you finish tracking, you may get tracking results from the model in `.h5` format. `mask2tracks.py` is needed to convert the masks to tracks (outputs in `.pkl` formate), and then export tracks to excel spreadsheet anytime you want. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`. In addition, it is recommended that you delete unneccesary log files (in .h5 format under the _logs_ folder) to avoid slowing down the computer. You may keep the newest log in case it is needed when loading the _last_ weights.
 
 ## Step 4: Post-processing of tracks
 For post-processing of tracks, [Francisco et al. (2020)](https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-020-00214-w) has already done great work by creating *TrackUtil*. In addition to *Annotation*, another key function, *tracks*, enables you to manually delete misidentified tracks, merge tracks, and interpolate segmented tracks. For more functions, go to the [Official Introduction Page of TrackUtil](https://gitlab.mpcdf.mpg.de/pnuehren/trackutil).
 In this step, you can use `Load videos` and `Load tracks` to help with visualizing the tracks, and decide which tracks are the right ones. After finishing the tracks processing (merge, delete, and interpolate), you can further `save tracks` for later tracks connection.
 
 # Turn 2D tracks into 3D metric space
-To turn 2D tracks identified from 5 fisheye cameras into 3D flume coordinates, you just need to run `XLMging2.m` in matlab. The folder can organized in other disk (e.g. D disk) as follow.
+To turn 2D tracks identified from 5 fisheye cameras into 3D flume coordinates, you just need to run `XLMging_DOITALL.m` in matlab. In this step, you can adjust the `minDistance` for tracks connection, and set proper threshold ofr accepted length of points cluster to filter out mis-identified tracks.
+
+The folder for results (calibration and tracking) can organized in other disk (e.g. D disk) as follow (take *FishSeg_Results* as an example).
+
 ```
-| -- initial_results
-    | -- 386_2020_05_11_08_18_mog2_results
-        | -- tracks_Cam_0_mog2.xlsx
-        | -- tracks_Cam_0_doitall..mat
-        | -- tracks_386_Cam_0.jpg
-        | -- ...
-    | -- 387_2020_05_11_09_19_mog2_results
-        | -- ...
-    | -- CLB_2020_12_11_14_04_xxx#xx1 
-    | -- 20181017_KAL00.xlsx
-| -- final_results
-    | -- #000XXX_2020_00_00_00_01
-        | -- 386_2020_05_11_08_18_mog2_results.mat
-        | -- 386_2020_05_11_08_18_mog2_results_figi52tmp_58.png
-        | -- ...
-    | -- 386_2020_05_11_08_18_mog2_results
-        | -- figN0x_58_c0*.png
-        | -- regDbl_58Xc0*to0*.mat
-        | -- tabiidr_58_c0*to0*.mat
-        | -- XYZetr_58_c0*to0*.mat
-| -- TempData
-    | -- tr0toXX_*_58_doitAll.mat
+| -- CalibResults
+    | -- CLB_2020_08_10_16_51_xxx#xxx
+    | -- CLB_2020_08_10_16_51_xxx#xx1
+| -- TrackingResults
+    | -- Outputs
+        | -- 300_2020_19_10_09_00_mog2_results
+            | -- predictions_Cam_0_mog2.h5
+            | -- tracks_Cam_0_mog2.pkl
+            | -- tracks_Cam_0_mog2.xlsx
+    | -- Results_initial
+        | -- 300_2020_19_10_09_00_mog2_results
+            | -- tracks_Cam_0_mog2.xlsx
+            | -- tracks_Cam_0_doitall.mat
+            | -- tracks_300_Cam_0.jpg
+    | -- Results_final
+        | -- #000XXX_2020_00_00_00_01
+            | -- 300_2020_19_10_09_00_mog2_results.mat
+            | -- 300_2020_19_10_09_00_mog2_results_figi52tmp_58.fig
+            | -- 300_2020_19_10_09_00_mog2_results_figi52tmp_58.png
+        | -- 300_2020_19_10_09_00_mog2_results
 ```
-In this step, you can adjust the `minDistance` for tracks connection, and set proper threshold ofr accepted length of points cluster to filter out mis-identified tracks.
 
 
 # Q&A
