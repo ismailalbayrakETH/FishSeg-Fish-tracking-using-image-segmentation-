@@ -1,0 +1,8 @@
+For trout model:
+  trout_train304.h5
+  trout_valid115.h5
+  
+  
+For eel model:
+  eel_train406.h5
+  eel_valid57.h5
