@@ -30,7 +30,7 @@ As you can see, the whole system is implemented using two programming language (
 # Fisheye camera calibration
 ## Calibration procedures
 The fisheye camera calibration is done following the [fisheye camera model](https://ch.mathworks.com/help/vision/ug/fisheye-calibration-basics.html).
-Herein, there are three main "DOITALL" functions that you need to run one by one.
+Herein, there are three main "DOITALL" functions that you need to run one by one. The instructions and necessary files in the Matlab path are specified in the header. 
 1. Kalibing_11_DOITALL.m
     a. Search for checkerboard intersections
 2. Undisting_11_DOITALL.m
@@ -71,7 +71,7 @@ Note that this process with deep learning model can be conducted using CPU. But 
 ## Installation
 ### For FishSeg
 **Requirements**
-Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed in `requirements.txt`.
+Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed in `requirements.txt`. The installation of these packages is included in the step-by-step guide below. 
 
 **Step-by-step installation guide**
 1. Create a virtual environment called `FishSeg`
@@ -80,7 +80,7 @@ Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed i
     conda activate FishSeg
     conda install git
     ```
-2. Clone this repository
+2. Clone this repository or alternatively download and unzip and copy it to C:\
     ```
     git clone https://github.com/ErinYang96/FishSeg.git
     ```
@@ -188,20 +188,68 @@ It is suggested that you organize your folder in the following way.
         | -- 387_2020_05_11_09_19_temp
 ```
 
-## Step 3: Segmentation and tracking
+
+
+## Step 3: Training and Tracking
 Currently, We have two sets of codes which are suitable for *Google Colab (Ubuntu System)* and *Windows 10*, respectively. Please select one of them according to your operating system. Note that if you hope to further develop the code for your Linus system, it is recommended that you start from the code for Colab.
 
 For those who don't have a NVIDA GPU on your PC or have GPUs of low memory, we recommand you to use Colab, which have free GPU resources and is quite suitable for beginners who have limited knowledge about python. If your have no idea about Colab before, check [here](https://medium.com/deep-learning-turkey/google-colab-free-gpu-tutorial-e113627b9f5d) to get an overview of what Colab is capable of. Please pay special attention to _how to mount on Google Drive_ and _how to set free GPU_, which are essential for your start. Note that Google Drive only provides 15G for data storage, which means Colab is not a good option for long-term training, since it will produce log data which can consume your RAM quickly.
 
 In addition, in case you may want to check your datasets or adjust the proportion between training and validation datasets for better model performance, `datasets.py` is implemented to make it easier for you with no need to make annotations over again.
 
-Instructions about how to use the model has been given within the code. **FishSeg** is basically written to be able to operate in two ways (after starting training from *COCO* weights): 
+**Workflow:**
+If a model has already been trained, Step 3 and 6 are optional 
+1) Tracking\StartTime.py - run all
+2) Tracking\backgroundSubtraction.py - run only the first cell!
+3) (Optional) Tracking\FishSeg_training.py
+4) Tracking\FishSeg_tracking.py
+5) Tracking\mask2tracks.py
+6) (Optional) Tracking\ReadTensorboard.py
+
+StartTime.py will takes as input a text file specifying which videos you want to track and the time when a first fish was observed in the experimental area. Due to a particularity of the camera system used at VAW, the videos are recorded using a framerate of 20fps but saved with 25fps. StartTime.py generates a text file specifying the start time for the tracking assuming 25fps. 
+
+Example Folder Structure: 
+
+TrackingGroups = 'D:\TrackingPlan\Exp_092-120.txt'
+
+StartTime = 'D:\TrackingPlan\StartTime_Exp_092-120.txt'
+
+BackgroundSubstraction.py generates background subtracted Videos and at determines if each frame (freq=1) or only every other frame (freq=2) should be tracked. 
+Example Folder Structure: 
+
+videoinpath = 'D:\\' #Location of the videos to be tracked
+
+videooutpath = 'E:\\vaw_efigus\\3_TrackingOutput\\BGS_Videos'
+
+xlsrID = 'FishGroup_092-120.txt'  #Should be located in videooutpath Folder!
+
+FishSeg_training.py generates a training dataset. After you finish training the model (`FishSeg_training.py`), you need to check the model performance using _Tensorboard_ or our `ReadTensorboard.py`, which enables you to export loss metrics and images with learning curves. For details about how to diagnose model performance from learning curves, please go to Q&A for more information.
+
+FishSeg_tracking.py does the actual tracking. In order to run, the pretrained model needs to be copied to 
+
+C\FishSeg\trout\Datasets - eel_train.h5, eel_valid.h5, trout_train.h5 and trout_valid.h5
+
+C\FishSeg\trout\save_model - EelModel.h5 and TroutModel.h5
+
+Example Folder Structure: 
+
+video_path = 'D:\\vaw_efigus\\3_TrackingOutput\\BGS_Videos' # Folder path for all BGS videos
+
+output_path = 'D:\\vaw_efigus\\3_TrackingOutput\\FishSeg_tracking_output' # Output folder path
+
+When you finish tracking, you will get tracking results (`FishSeg_tracking.py`) from the model in `.h5` format.
+
+mask2tracks.py` is needed to convert the masks to tracks (outputs in `.pkl` formate), and then export tracks to an excel spreadsheet. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`. In addition, it is recommended that you delete unneccesary log files (in .h5 format under the _logs_ folder) to avoid slowing down the computer. You may keep the newest log in case it is needed when loading the _last_ weights.
+
+Further instructions about how to use the model has been given within the code. 
+
+**FishSeg** is basically written to be able to operate in two ways (after starting training from *COCO* weights): 
 1. Load model for video testing from _last_ weights (_logs_ folder). With trained model, you may skip *Pre-definition* section, and start video testing from *From last-trained model (coco/last)* section.
 2. Save current model in HD5F format (*save_model* folder), load model for video testing from pre-saved .h5 model. Same as above, in this case you can start video testing from *From saved model* section.
 
-After you finish training the model (`FishSeg_training.py`), you need to check the model performance using _Tensorboard_ or our `ReadTensorboard.py`, which enables you to export loss metrics and images with learning curves. For details about how to diagnose model performance from learning curves, please go to Q&A for more information.
 
-Then if you finish tracking, you may get tracking results (`FishSeg_tracking.py`) from the model in `.h5` format. `mask2tracks.py` is needed to convert the masks to tracks (outputs in `.pkl` formate), and then export tracks to excel spreadsheet anytime you want. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`. In addition, it is recommended that you delete unneccesary log files (in .h5 format under the _logs_ folder) to avoid slowing down the computer. You may keep the newest log in case it is needed when loading the _last_ weights.
+
+
 
 ## Step 4: Post-processing of tracks
 For post-processing of tracks, [Francisco et al. (2020)](https://movementecologyjournal.biomedcentral.com/articles/10.1186/s40462-020-00214-w) has already done great work by creating *TrackUtil*. In addition to *Annotation*, another key function, *tracks*, enables you to manually delete misidentified tracks, merge tracks, and interpolate segmented tracks. For more functions, go to the [Official Introduction Page of TrackUtil](https://gitlab.mpcdf.mpg.de/pnuehren/trackutil).
