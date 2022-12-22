@@ -69,6 +69,19 @@ Two steps are required to conduct the 2D fish tracking.
 Note that this process with deep learning model can be conducted using CPU. But with NVIDIA GPU, it is much faster. See the following *Installation* section for more instructions about how to implement the python packages.
 
 ## Installation
+### Enable GPU usage on a Computer/Server using a NVIDIA GPU
+In order to enable the python scripts to use your GPU and therefore run much faster than on CPU, you need to copy the NVIDIA GPU Computing Toolkit under your C folder. 
+For vawsrv02 this is already done. 
+
+Each user needs to Click start -> Type env -> select [Edit environment variables for your account] -> Select [Path] and click on [Edit]
+Here you need to add the following 3 paths: 
+
+```
+C:\Apps\NVIDIA GPU Computing Toolkit\CUDA\v11.2
+C:\Apps\NVIDIA GPU Computing Toolkit\CUDA\v11.2\bin
+C:\Apps\NVIDIA GPU Computing Toolkit\CUDA\v11.2\lib\x64
+```
+
 ### For FishSeg
 **Requirements**
 Python 3.8.10, Tensorflow 2.7.0, Keras 2.7.0, and other common packages listed in `requirements.txt`. The installation of these packages is included in the step-by-step guide below. 
@@ -206,40 +219,38 @@ If a model has already been trained, Step 3 and 6 are optional
 5) Tracking\mask2tracks.py
 6) (Optional) Tracking\ReadTensorboard.py
 
-StartTime.py will takes as input a text file specifying which videos you want to track and the time when a first fish was observed in the experimental area. Due to a particularity of the camera system used at VAW, the videos are recorded using a framerate of 20fps but saved with 25fps. StartTime.py generates a text file specifying the start time for the tracking assuming 25fps. 
+**StartTime.py** will takes as input a text file specifying which videos you want to track and the time when a first fish was observed in the experimental area. Due to a particularity of the camera system used at VAW, the videos are recorded using a framerate of 20fps but saved with 25fps. StartTime.py generates a text file specifying the start time for the tracking assuming 25fps. 
 
 Example Folder Structure: 
-
+```
 TrackingGroups = 'D:\TrackingPlan\Exp_092-120.txt'
-
 StartTime = 'D:\TrackingPlan\StartTime_Exp_092-120.txt'
+```
 
-BackgroundSubstraction.py generates background subtracted Videos and at determines if each frame (freq=1) or only every other frame (freq=2) should be tracked. 
+**BackgroundSubstraction.py** generates background subtracted Videos and at determines if each frame (freq=1) or only every other frame (freq=2) should be tracked. 
 Example Folder Structure: 
-
+```
 videoinpath = 'D:\\' #Location of the videos to be tracked
-
 videooutpath = 'E:\\vaw_efigus\\3_TrackingOutput\\BGS_Videos'
-
 xlsrID = 'FishGroup_092-120.txt'  #Should be located in videooutpath Folder!
+```
+**FishSeg_training.py** generates a training dataset. After you finish training the model (`FishSeg_training.py`), you need to check the model performance using _Tensorboard_ or our `ReadTensorboard.py`, which enables you to export loss metrics and images with learning curves. For details about how to diagnose model performance from learning curves, please go to Q&A for more information.
 
-FishSeg_training.py generates a training dataset. After you finish training the model (`FishSeg_training.py`), you need to check the model performance using _Tensorboard_ or our `ReadTensorboard.py`, which enables you to export loss metrics and images with learning curves. For details about how to diagnose model performance from learning curves, please go to Q&A for more information.
-
-FishSeg_tracking.py does the actual tracking. In order to run, the pretrained model needs to be copied to 
-
+**FishSeg_tracking.py** does the actual tracking. In order to run, the pretrained model needs to be copied to 
+```
 C\FishSeg\trout\Datasets - eel_train.h5, eel_valid.h5, trout_train.h5 and trout_valid.h5
-
 C\FishSeg\trout\save_model - EelModel.h5 and TroutModel.h5
-
+```
 Example Folder Structure: 
-
+```
 video_path = 'D:\\vaw_efigus\\3_TrackingOutput\\BGS_Videos' # Folder path for all BGS videos
-
 output_path = 'D:\\vaw_efigus\\3_TrackingOutput\\FishSeg_tracking_output' # Output folder path
-
+```
 When you finish tracking, you will get tracking results (`FishSeg_tracking.py`) from the model in `.h5` format.
+In order to run several trackings in parallel, open another instance of spyder and run a copy of FishSeg_tracking.py there. You can run 2 instances of spyder on each GPU. 
 
-mask2tracks.py` is needed to convert the masks to tracks (outputs in `.pkl` formate), and then export tracks to an excel spreadsheet. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`. In addition, it is recommended that you delete unneccesary log files (in .h5 format under the _logs_ folder) to avoid slowing down the computer. You may keep the newest log in case it is needed when loading the _last_ weights.
+
+**mask2tracks.py** is needed to convert the masks to tracks (outputs in `.pkl` formate), and then export tracks to an excel spreadsheet. For `mask2tracks.py`, there are two main parameters which you can fine tune for better tracks, which are `min_overlap` and `max_merge_dist`. In addition, it is recommended that you delete unneccesary log files (in .h5 format under the _logs_ folder) to avoid slowing down the computer. You may keep the newest log in case it is needed when loading the _last_ weights.
 
 Further instructions about how to use the model has been given within the code. 
 
@@ -256,7 +267,8 @@ For post-processing of tracks, [Francisco et al. (2020)](https://movementecology
 In this step, you can use `Load videos` and `Load tracks` to help with visualizing the tracks, and decide which tracks are the right ones. After finishing the tracks processing (merge, delete, and interpolate), you can further `save tracks` for later tracks connection.
 
 # Turn 2D tracks into 3D metric space
-To turn 2D tracks identified from 5 fisheye cameras into flume coordinates, you just need to run `XLMging_DOITALL_2D.m` for 2D tracks and `XLMging_DOITALL_3D.m` for 3D tracks. In this step, you can adjust the `minDistance` for tracks connection, and set proper threshold for accepted length of points cluster to filter out mis-identified tracks.
+This is done in Matlab. 
+To turn 2D tracks identified from 5 fisheye cameras into flume coordinates, you need to run `XLMging_DOITALL_2D.m` for 2D tracks and `XLMging_DOITALL_3D.m` for 3D tracks. In this step, you can adjust the `minDistance` for tracks connection, and set proper threshold for accepted length of points cluster to filter out mis-identified tracks.
 
 The folder for results (calibration and tracking) can organized in other disk (e.g. D disk) as follow.
 
@@ -280,7 +292,9 @@ The folder for results (calibration and tracking) can organized in other disk (e
             | -- 300_2020_19_10_09_00_mog2_results_figi52tmp_58.png
         | -- 300_2020_19_10_09_00_mog2_results
 ```
-
+* Outputs - Output from tracking.py
+* initialresults - xlsx files 
+* final results - just the plot and .m file you will need to further analyze your data. 
 
 # Q&A
 **Is there any way that enables me to train large datasets in Google Colab?**
