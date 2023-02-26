@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 """
-Created on Fri Jun 17 17:16:03 2022
+FishSeg
+Fish Tracking
 
-@author: 26369
+Copyright (c) 2023 ETH Zurich
+Written by Fan Yang and Martin Detert
+BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
+License under the 3-clause BSD License (see LICENSE for details)
 """
-#%% FishSeg tracking
-# Part 2 Tracking
-# Fan Yang, Aug 2022
+
 # "Tracking" consists of 5 main scripts:
 # (1) backgroundSubtraction.py: Do MOG2 background subtraction for experimental videos
 # (2) FishSeg_training.py: Training FishSeg model and test video tracking based on the model;
