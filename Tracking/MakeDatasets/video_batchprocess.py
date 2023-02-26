@@ -1,9 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Created on Fri Jul 29 16:52:23 2022
+FishSeg
+Make Datasets
 
-@author: yanfan
-""" 
+Copyright (c) 2023 ETH Zurich
+Written by Fan Yang and Martin Detert
+BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
+License under the 3-clause BSD License (see LICENSE for details)
+"""
 
 # This script is intended for applying backgroundSubtractorMOG2 for all video clips
 
