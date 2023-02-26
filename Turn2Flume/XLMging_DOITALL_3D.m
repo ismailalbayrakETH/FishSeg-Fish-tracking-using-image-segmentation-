@@ -1,10 +1,14 @@
-% 3D Fish Tracking Project
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%FishSeg
+%Equalize and apply calibration to the generated tracks
 
-% Part 3 - Equalize and apply calibration to the generated tracks
-% Fan Yang
-% July 2022
-% Matlab 2021b, VLC Player
+%Copyright (c) 2023 ETH Zurich
+%Written by Fan Yang and Martin Detert
+%D-BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
+%License under the 3-clause BSD License (see LICENSE for details)
 
+%%%%%%%%%%%%%%
+%Matlab 2021b, VLC Player
 %% Required functions/Files in Matlab Path: 
 %Output from Mask R-CNN (in excel files)
 %Output from CALIBRATION (CLB Folder)
