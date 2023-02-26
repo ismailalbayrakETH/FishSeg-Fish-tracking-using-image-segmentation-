@@ -1,10 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%FishSeg
 %Calibration of Cameras for Video Tracking
 %Part 1 Calibration
-%Martin Detert
-%Dec 2019, Version 58
-%Matlab 2018b, VLC Player
+
+%Copyright (c) 2023 ETH Zurich
+%Written by Fan Yang and Martin Detert
+%D-BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
+%License under the 3-clause BSD License (see LICENSE for details)
+
 %%%%%%%%%%%%%%%%%%%%%%%%
+%Matlab 2018b, VLC Player
 %Calibration consists of 3 Work packages, each needing the output from the previous one. 
 %1) - multiObjectKalibingVAWMDE58_11_DOITALL  - Search Checkerboard intersections
 %2) - multiObjectUndistingVAWMDE58_11_DOITALL - Calibrate single cams (fisheye) and pairwise cameras using checkerboard intersections. 
