@@ -1,12 +1,13 @@
-# -*- coding: utf-8 -*-
 """
-Created on Wed Aug 17 08:23:40 2022
+FishSeg
+Make Datasets
 
-@author: yanfan
+Copyright (c) 2023 ETH Zurich
+Written by Fan Yang and Martin Detert
+BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
+License under the 3-clause BSD License (see LICENSE for details)
 """
-#%% FishSeg tracking
-# Part 1 Make datasets
-# Fan Yang, Aug 2022
+
 # "MakeDatasets" consists of 4 main scripts:
 # （1） StartTime.py: Correct the manually recorded start time (from 25 fps to 20 fps),
 # specially setup for VAW fisheye camera system;
