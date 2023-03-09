@@ -3,7 +3,6 @@
 %Equalize and apply calibration to the generated tracks
 
 %Copyright (c) 2023 ETH Zurich
-%Written by Fan Yang and Martin Detert
 %D-BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
 %License under the 3-clause BSD License (see LICENSE for details)
 
