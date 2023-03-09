@@ -3,7 +3,6 @@ FishSeg
 Make Datasets
 
 Copyright (c) 2023 ETH Zurich
-Written by Fan Yang and Martin Detert
 BAUG, Laboratory of Hydraulics, Hydrology and Glaciology (VAW), Prof. Robert Boes
 License under the 3-clause BSD License (see LICENSE for details)
 """
